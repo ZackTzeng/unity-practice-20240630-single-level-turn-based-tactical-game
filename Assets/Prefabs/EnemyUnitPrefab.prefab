@@ -100,3 +100,6 @@ MonoBehaviour:
   _idleSprite: {fileID: 160774252, guid: 51d1b3012cce34129b8893b938cf4654, type: 3}
   _activeSprite: {fileID: -303228366, guid: 51d1b3012cce34129b8893b938cf4654, type: 3}
   _range: 1
+  _attack: 1
+  _attackRange: 2
+  _health: 3

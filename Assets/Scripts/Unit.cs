@@ -7,6 +7,9 @@ public class Unit : MonoBehaviour
     [SerializeField] private Sprite _idleSprite;
     [SerializeField] private Sprite _activeSprite;
     [SerializeField] private int _range;
+    [SerializeField] private int _attack;
+    [SerializeField] private int _attackRange;
+    [SerializeField] private int _health;
     private SpriteRenderer _spriteRenderer;
     private WorldPosition _worldPosition;
 
@@ -48,5 +51,24 @@ public class Unit : MonoBehaviour
     public int GetRange()
     {
         return _range;
+    }
+
+    public int GetAttackRange()
+    {
+        return _attackRange;
+    }
+
+    public int GetAttack()
+    {
+        return _attack;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        _health -= damage;
+        if (_health <= 0)
+        {
+            Debug.Log("Unit is dead");
+        }
     }
 }

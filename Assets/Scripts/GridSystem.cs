@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,6 +6,8 @@ using UnityEngine.Tilemaps;
 
 public class GridSystem : MonoBehaviour
 {
+    public event Action<Unit> UnitBecameActive;
+    public event Action ActiveUnitBecameIdle;
     [SerializeField] private Grid _grid;
     [SerializeField] private Tilemap _tilemap;
     [SerializeField] private List<GridPosition> _allyUnitStartingGridPositions = new();
@@ -12,6 +15,7 @@ public class GridSystem : MonoBehaviour
     [SerializeField] private MouseController _mouseController;
     [SerializeField] private GameObject _allyUnitPrefab;
     [SerializeField] private GameObject _enemyUnitPrefab;
+    [SerializeField] private UnitActionUI _unitActionUI;
     private Dictionary<GridPosition, Unit> _dictGridPositionToUnit = new();
     private Unit _activeUnit = null;
     private bool _isAttackSelected = false;
@@ -148,12 +152,15 @@ public class GridSystem : MonoBehaviour
         _highlightService.UnhighlightHighlightedTiles();
         _activeUnit.SetIdleSprite();
         _activeUnit = null;
+        _isAttackSelected = false;
+        ActiveUnitBecameIdle?.Invoke();
     }
 
     private void SetActiveUnit(Unit unit)
     {
         Debug.Log($"Set Unit {unit} as the active unit");
         _activeUnit = unit;
+        _isAttackSelected = false;
         unit.SetActiveSprite();
         List<GridPosition> movableTileGridPositions = _tileValidationService.GetMovableTileGridPositions(unit);
         foreach (GridPosition gridPosition in movableTileGridPositions)
@@ -161,6 +168,7 @@ public class GridSystem : MonoBehaviour
             Debug.Log($"SetActiveUnit GP{gridPosition}");
         }
         _highlightService.HighlightMovableTiles(movableTileGridPositions);
+        UnitBecameActive?.Invoke(_activeUnit);
     }
 
     private void MoveActiveUnit(GridPosition targetGridPosition)
@@ -173,11 +181,27 @@ public class GridSystem : MonoBehaviour
         _highlightService.HighlightMovableTiles(_tileValidationService.GetMovableTileGridPositions(_activeUnit));
     }
 
+    private void UnitActionUI_UnitMoveButtonClicked(Unit unit)
+    {
+        Debug.Log($"Unit {unit} move button clicked");
+        _isAttackSelected = false;
+    }
+
+    private void UnitActionUI_UnitAttackButtonClicked(Unit unit)
+    {
+        Debug.Log($"Unit {unit} attack button clicked");
+        _isAttackSelected = true;
+    }
+
     private void OnEnable() {
         _mouseController.LeftMouseClicked += MouseController_LeftMouseClicked;
+        _unitActionUI.UnitMoveButtonClicked += UnitActionUI_UnitMoveButtonClicked;
+        _unitActionUI.UnitAttackButtonClicked += UnitActionUI_UnitAttackButtonClicked;
     }
 
     private void OnDisable() {
         _mouseController.LeftMouseClicked -= MouseController_LeftMouseClicked;
+        _unitActionUI.UnitMoveButtonClicked -= UnitActionUI_UnitMoveButtonClicked;
+        _unitActionUI.UnitAttackButtonClicked -= UnitActionUI_UnitAttackButtonClicked;
     }
 }
