@@ -214,4 +214,15 @@ public class GridSystem : MonoBehaviour
         _unitActionUI.UnitAttackButtonClicked -= UnitActionUI_UnitAttackButtonClicked;
         Unit.UnitKilled -= Unit_UnitKilled;
     }
+
+    public void ShowDictGridPositionToUnit()
+    {
+        foreach (KeyValuePair<GridPosition, Unit> kvp in _dictGridPositionToUnit)
+        {
+            if (kvp.Value != null)
+            {
+                Debug.Log($"GridPosition: {kvp.Key}, Unit: {kvp.Value}");
+            }
+        }
+    }
 }
