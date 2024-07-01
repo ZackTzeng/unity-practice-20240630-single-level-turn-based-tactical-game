@@ -6,6 +6,7 @@ public class CombatService
 {
     public void ResolveAttack(Unit attacker, Unit defender)
     {
+        Debug.Log($"CombatService: ResolveAttack(): {attacker.name} attacks {defender.name}!");
         defender.TakeDamage(attacker.GetAttack());
     }
 }

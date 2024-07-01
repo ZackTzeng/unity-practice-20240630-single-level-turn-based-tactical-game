@@ -21,10 +21,12 @@ public class GridSystem : MonoBehaviour
     private bool _isAttackSelected = false;
     private TileValidationService _tileValidationService;
     private HighlightService _highlightService;
+    private CombatService _combatService;
     
     private void Start() {
         _tileValidationService = GetComponent<TileValidationService>();
         _highlightService = GetComponent<HighlightService>();
+        _combatService = new();
         BoundsInt bounds = _tilemap.cellBounds;
         foreach (Vector3Int position in bounds.allPositionsWithin)
         {
@@ -108,7 +110,7 @@ public class GridSystem : MonoBehaviour
                 // An active unit && a selected skill && the mouse clicked on another unit
                 else if (_isAttackSelected && _activeUnit != _dictGridPositionToUnit[mouseGridPosition])
                 {
-                    Debug.Log($"Resolve combat.");
+                    _combatService.ResolveAttack(_activeUnit, selectedUnit);
                 }
                 
             }
@@ -193,15 +195,23 @@ public class GridSystem : MonoBehaviour
         _isAttackSelected = true;
     }
 
+    private void Unit_UnitKilled(Unit unit)
+    {
+        Debug.Log($"Unit {unit} is killed");
+        _dictGridPositionToUnit[GetGridPositionFromWorldPosition(unit.GetWorldPosition())] = null;
+    }
+
     private void OnEnable() {
         _mouseController.LeftMouseClicked += MouseController_LeftMouseClicked;
         _unitActionUI.UnitMoveButtonClicked += UnitActionUI_UnitMoveButtonClicked;
         _unitActionUI.UnitAttackButtonClicked += UnitActionUI_UnitAttackButtonClicked;
+        Unit.UnitKilled += Unit_UnitKilled;
     }
 
     private void OnDisable() {
         _mouseController.LeftMouseClicked -= MouseController_LeftMouseClicked;
         _unitActionUI.UnitMoveButtonClicked -= UnitActionUI_UnitMoveButtonClicked;
         _unitActionUI.UnitAttackButtonClicked -= UnitActionUI_UnitAttackButtonClicked;
+        Unit.UnitKilled -= Unit_UnitKilled;
     }
 }

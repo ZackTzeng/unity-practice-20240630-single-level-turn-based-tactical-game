@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
+    public static event Action<Unit> UnitKilled;
     [SerializeField] private Sprite _idleSprite;
     [SerializeField] private Sprite _activeSprite;
     [SerializeField] private int _range;
@@ -66,9 +68,13 @@ public class Unit : MonoBehaviour
     public void TakeDamage(int damage)
     {
         _health -= damage;
+        Debug.Log($"Unit: TakeDamage(): {name} takes {damage} damage!");
+        Debug.Log($"Unit: TakeDamage(): {name} has {_health} health!");
         if (_health <= 0)
         {
             Debug.Log("Unit is dead");
+            UnitKilled?.Invoke(this);
+            Destroy(gameObject);
         }
     }
 }
