@@ -14,8 +14,12 @@ public class Unit : MonoBehaviour
     [SerializeField] private int _health;
     private SpriteRenderer _spriteRenderer;
     private WorldPosition _worldPosition;
+    private float _takeDamageAnimationDuration = 0.4f;
+    private Color _takeDamageTargetColor = Color.red;
+    private bool _isTakeDamageCoroutineRunning = false;
 
-    private void Awake() {
+    private void Awake()
+    {
         _spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
@@ -67,14 +71,57 @@ public class Unit : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        _health -= damage;
-        Debug.Log($"Unit: TakeDamage(): {name} takes {damage} damage!");
-        Debug.Log($"Unit: TakeDamage(): {name} has {_health} health!");
+        if (!_isTakeDamageCoroutineRunning)
+        {
+            _health -= damage;
+            Debug.Log($"Unit: TakeDamage(): {name} takes {damage} damage!");
+            Debug.Log($"Unit: TakeDamage(): {name} has {_health} health!");
+            StartCoroutine(TakeDamageCoroutine());
+        }
+
+    }
+
+    private IEnumerator TakeDamageCoroutine()
+    {
+        _isTakeDamageCoroutineRunning = true;
+        yield return StartCoroutine(AnimateTakeDamageCoroutine());
+
         if (_health <= 0)
         {
             Debug.Log("Unit is dead");
             UnitKilled?.Invoke(this);
             Destroy(gameObject);
+        }
+        _isTakeDamageCoroutineRunning = false;
+    }
+
+    private IEnumerator AnimateTakeDamageCoroutine()
+    {
+        Color originalColor = _spriteRenderer.color;
+        float elapsedTime = 0f;
+
+        // Transition to the target color
+        while (elapsedTime < _takeDamageAnimationDuration)
+        {
+            _spriteRenderer.color = Color.Lerp(originalColor, _takeDamageTargetColor, elapsedTime / _takeDamageAnimationDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // Ensure the target color is set at the end
+        _spriteRenderer.color = _takeDamageTargetColor;
+
+        // // Wait for a moment at the target color
+        // yield return new WaitForSeconds(1.0f);
+
+        elapsedTime = 0f;
+
+        // Transition back to the original color
+        while (elapsedTime < _takeDamageAnimationDuration)
+        {
+            _spriteRenderer.color = Color.Lerp(_takeDamageTargetColor, originalColor, elapsedTime / _takeDamageAnimationDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
         }
     }
 }
