@@ -13,6 +13,9 @@ public class GridSystem : MonoBehaviour
     [SerializeField] private List<GridPosition> _allyUnitStartingGridPositions = new();
     [SerializeField] private List<GridPosition> _enemyUnitStartingGridPositions = new();
     [SerializeField] private MouseController _mouseController;
+    [SerializeField] private GameObject _unitPrefab;
+    [SerializeField] private List<UnitSO> _allyUnitSOs = new();
+    [SerializeField] private List<UnitSO> _enemyUnitSOs = new();
     [SerializeField] private GameObject _allyUnitPrefab;
     [SerializeField] private GameObject _enemyUnitPrefab;
     [SerializeField] private UnitActionUI _unitActionUI;
@@ -22,6 +25,18 @@ public class GridSystem : MonoBehaviour
     private TileValidationService _tileValidationService;
     private HighlightService _highlightService;
     private CombatService _combatService;
+
+    private void OnValidate() {
+        if (_allyUnitStartingGridPositions.Count != _allyUnitSOs.Count)
+        {
+            Debug.LogError("The number of ally unit starting grid positions must be equal to the number of ally unit SOs.");
+        }
+
+        if (_enemyUnitStartingGridPositions.Count != _enemyUnitSOs.Count)
+        {
+            Debug.LogError("The number of enemy unit starting grid positions must be equal to the number of enemy unit SOs.");
+        }
+    }
     
     private void Start() {
         _tileValidationService = GetComponent<TileValidationService>();
@@ -32,22 +47,22 @@ public class GridSystem : MonoBehaviour
         {
             _dictGridPositionToUnit[new GridPosition(position)] = null;
         }
-        foreach (GridPosition friendlyUnitGridPosition in _allyUnitStartingGridPositions)
+        for (int i = 0; i < _allyUnitStartingGridPositions.Count; i++)
         {
-            SpawnUnit(_allyUnitPrefab, friendlyUnitGridPosition);
+            SpawnUnit(_allyUnitSOs[i], _allyUnitStartingGridPositions[i]);
         }
-        foreach (GridPosition enemyUnitGridPosition in _enemyUnitStartingGridPositions)
+        for (int i = 0; i < _enemyUnitStartingGridPositions.Count; i++)
         {
-            SpawnUnit(_enemyUnitPrefab, enemyUnitGridPosition);
+            SpawnUnit(_enemyUnitSOs[i], _enemyUnitStartingGridPositions[i]);
         }
     }
 
-    private void SpawnUnit(GameObject unitPrefab, GridPosition spawnGridPosition)
+    private void SpawnUnit(UnitSO unitSO, GridPosition spawnGridPosition)
     {
-        GameObject unitGameObject = Instantiate(unitPrefab, Vector3.zero, Quaternion.identity);
+        GameObject unitGameObject = Instantiate(_unitPrefab, Vector3.zero, Quaternion.identity);
         WorldPosition spawnWorldPosition = GetWorldPositionFromGridPosition(spawnGridPosition);
         Unit unit = unitGameObject.GetComponent<Unit>();
-        unit.Spawn(spawnWorldPosition);
+        unit.Spawn(unitSO, spawnWorldPosition);
         _dictGridPositionToUnit[spawnGridPosition] = unit;
     }
 

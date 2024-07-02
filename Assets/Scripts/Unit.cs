@@ -1,17 +1,23 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
     public static event Action<Unit> UnitKilled;
-    [SerializeField] private Sprite _idleSprite;
-    [SerializeField] private Sprite _activeSprite;
-    [SerializeField] private int _range;
-    [SerializeField] private int _attack;
-    [SerializeField] private int _attackRange;
-    [SerializeField] private int _health;
+    public event Action<float> HealthChanged;
+
+    private UnitSO _unitSO;
+    [SerializeField] private HealthBarUI healthBarUI;
+    private Sprite _idleSprite;
+    private Sprite _activeSprite;
+    private int _range;
+    private int _attack;
+    private int _attackRange;
+    private int _health;
+    private int _maxHealth;
     private SpriteRenderer _spriteRenderer;
     private WorldPosition _worldPosition;
     private float _takeDamageAnimationDuration = 0.4f;
@@ -23,8 +29,17 @@ public class Unit : MonoBehaviour
         _spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    public void Spawn(WorldPosition worldPosition)
+    public void Spawn(UnitSO unitSO, WorldPosition worldPosition)
     {
+        _unitSO = unitSO;
+        _idleSprite = _unitSO.IdleSprite;
+        _activeSprite = _unitSO.ActiveSprite;
+        _range = _unitSO.Range;
+        _attack = _unitSO.Attack;
+        _attackRange = _unitSO.AttackRange;
+        _maxHealth = _unitSO.MaxHealth;
+        _health = _maxHealth;
+        HealthChanged?.Invoke(1f);
         SetIdleSprite();
         Move(worldPosition);
     }
@@ -59,6 +74,16 @@ public class Unit : MonoBehaviour
         return _range;
     }
 
+    public int GetHealth()
+    {
+        return _health;
+    }
+
+    public float GetHealthPercentage()
+    {
+        return ((float)_health) / ((float)_maxHealth);
+    }
+
     public int GetAttackRange()
     {
         return _attackRange;
@@ -76,6 +101,8 @@ public class Unit : MonoBehaviour
             _health -= damage;
             Debug.Log($"Unit: TakeDamage(): {name} takes {damage} damage!");
             Debug.Log($"Unit: TakeDamage(): {name} has {_health} health!");
+            Debug.Log($"Unit: {name} has {GetHealthPercentage()} health percentage!");
+            HealthChanged?.Invoke(GetHealthPercentage());
             StartCoroutine(TakeDamageCoroutine());
         }
 
@@ -110,9 +137,6 @@ public class Unit : MonoBehaviour
 
         // Ensure the target color is set at the end
         _spriteRenderer.color = _takeDamageTargetColor;
-
-        // // Wait for a moment at the target color
-        // yield return new WaitForSeconds(1.0f);
 
         elapsedTime = 0f;
 
