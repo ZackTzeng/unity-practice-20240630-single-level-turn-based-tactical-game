@@ -110,22 +110,30 @@ public class GridSystem : MonoBehaviour
             else
             {
                 // An active unit && the mouse clicked on the active unit
-                if (_activeUnit == _dictGridPositionToUnit[mouseGridPosition])
+                if (_activeUnit == selectedUnit)
                 {
                     SetActiveUnitIdle();
                 }
 
                 // An active unit && no selected skill && the mouse clicked on another unit
-                else if (!_isAttackSelected && _activeUnit != _dictGridPositionToUnit[mouseGridPosition])
+                else if (!_isAttackSelected && _activeUnit != selectedUnit)
                 {
                     SetActiveUnitIdle();
                     SetActiveUnit(selectedUnit);
                 }
 
                 // An active unit && a selected skill && the mouse clicked on another unit
-                else if (_isAttackSelected && _activeUnit != _dictGridPositionToUnit[mouseGridPosition])
+                else if (_isAttackSelected && _activeUnit != selectedUnit)
                 {
-                    _combatService.ResolveAttack(_activeUnit, selectedUnit);
+                    if (_tileValidationService.GetAttackableTileGridPosition(_activeUnit).Contains(mouseGridPosition))
+                    {
+                        _combatService.ResolveAttack(_activeUnit, selectedUnit);
+                    }
+                    else
+                    {
+                        SetActiveUnitIdle();
+                        SetActiveUnit(selectedUnit);
+                    }
                 }
                 
             }

@@ -48,7 +48,7 @@ public class TileValidationService : MonoBehaviour
                         if (tile is ScriptableTile scriptableTile)
                         {
                             if (
-                            !_gridSystem.IsGridPositionOccupiedByUnit(direction) &&
+                            direction != attackOriginGridPosition &&
                             scriptableTile.IsWalkable
                         )
                             {
