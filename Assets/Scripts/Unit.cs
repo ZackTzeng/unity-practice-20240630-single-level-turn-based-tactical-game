@@ -9,8 +9,9 @@ public class Unit : MonoBehaviour
     public static event Action<Unit> UnitKilled;
     public event Action<float> HealthChanged;
 
-    private UnitSO _unitSO;
     [SerializeField] private HealthBarUI healthBarUI;
+    
+    private UnitSO _unitSO;
     private Sprite _idleSprite;
     private Sprite _activeSprite;
     private int _range;
